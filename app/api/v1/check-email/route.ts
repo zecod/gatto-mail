@@ -1,0 +1,116 @@
+import { NextRequest, NextResponse } from "next/server";
+import dns from "dns/promises";
+import net from "net";
+
+// Normalize names
+function normalize(str: string): string {
+  return str.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+// Generate email guess patterns
+function generateGuesses(name: string, domain: string): string[] {
+  const parts = normalize(name).split(" ");
+  if (parts.length < 2) return [];
+
+  const firstParts = parts.slice(0, Math.ceil(parts.length / 2));
+  const lastParts = parts.slice(Math.ceil(parts.length / 2));
+  const guesses = new Set<string>();
+
+  for (const first of firstParts) {
+    for (const last of lastParts) {
+      guesses.add(`${first}@${domain}`);
+      guesses.add(`${last}@${domain}`);
+      guesses.add(`${first}.${last}@${domain}`);
+      guesses.add(`${last}.${first}@${domain}`);
+      guesses.add(`${first}${last}@${domain}`);
+      guesses.add(`${last}${first}@${domain}`);
+      guesses.add(`${first.charAt(0)}${last}@${domain}`);
+      guesses.add(`${first.charAt(0)}.${last}@${domain}`);
+      guesses.add(`${first.charAt(0)}${last.charAt(0)}@${domain}`);
+    }
+  }
+
+  return Array.from(guesses);
+}
+
+// Raw SMTP check with net.Socket
+async function checkEmailSMTP(email: string): Promise<boolean> {
+  const domain = email.split("@")[1];
+  const mxRecords = await dns.resolveMx(domain);
+  if (!mxRecords.length) return false;
+
+  mxRecords.sort((a, b) => a.priority - b.priority);
+  const mxHost = mxRecords[0].exchange;
+
+  return await new Promise((resolve) => {
+    const socket = net.createConnection(25, mxHost, () => {
+      let step = 0;
+      const commands = [
+        `EHLO suonora.com\r\n`,
+        `MAIL FROM:<test@suonora.com>\r\n`,
+        `RCPT TO:<${email}>\r\n`,
+        `QUIT\r\n`,
+      ];
+
+      socket.setEncoding("utf-8");
+
+      socket.on("data", (data) => {
+        if (data.toString().startsWith("550")) {
+          socket.end();
+          return resolve(false);
+        }
+
+        if (step < commands.length) {
+          socket.write(commands[step]);
+          step++;
+        } else {
+          socket.end();
+          return resolve(true);
+        }
+      });
+
+      socket.on("error", () => resolve(false));
+      socket.setTimeout(5000, () => {
+        socket.end();
+        return resolve(false);
+      });
+    });
+  });
+}
+
+// POST handler
+export async function POST(req: NextRequest) {
+  try {
+    const { name, domain } = await req.json();
+
+    if (!name || !domain) {
+      return NextResponse.json(
+        { success: false, message: "Missing name or domain" },
+        { status: 400 }
+      );
+    }
+
+    const guesses = generateGuesses(name, domain);
+
+    for (const guess of guesses) {
+      const isValid = await checkEmailSMTP(guess);
+      if (isValid) {
+        return NextResponse.json({
+          success: true,
+          email: guess,
+          message: "ok",
+        });
+      }
+    }
+
+    return NextResponse.json({
+      success: false,
+      message: "No valid email found",
+    });
+  } catch (err: any) {
+    return NextResponse.json(
+      { success: false, message: err.message },
+      { status: 500 }
+    );
+  }
+}
