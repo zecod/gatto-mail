@@ -75,18 +75,9 @@ class EmailChecker {
     try {
       const domain = email.split("@")[1];
 
-      // Check MX records
+      // Check MX records - this only validates the domain, not the specific email
       const mxRecords = await dns.resolveMx(domain);
-      if (!mxRecords.length) return false;
-
-      // Optional: Also check if domain has A record
-      try {
-        await dns.resolve4(domain);
-        return true;
-      } catch {
-        // Domain might only have MX records, that's still valid
-        return mxRecords.length > 0;
-      }
+      return mxRecords.length > 0;
     } catch {
       return false;
     }
@@ -98,22 +89,18 @@ class EmailChecker {
       const mxRecords = await dns.resolveMx(domain);
       if (!mxRecords.length) return false;
 
-      // Use random MX server to avoid patterns
-      const randomMX = mxRecords[Math.floor(Math.random() * mxRecords.length)];
-
-      // Generate random client hostname
-      const randomHostname = `mail-${randomBytes(4).toString("hex")}.${domain}`;
+      // Sort by priority and try the primary MX server
+      mxRecords.sort((a, b) => a.priority - b.priority);
+      const mxHost = mxRecords[0].exchange;
 
       const connection = new SMTPConnection({
-        host: randomMX.exchange,
+        host: mxHost,
         port: 25,
         secure: false,
         tls: { rejectUnauthorized: false },
-        socketTimeout: 10000,
-        greetingTimeout: 10000,
-        name: randomHostname,
-        // Add some randomization to connection timing
-        connectionTimeout: 8000 + Math.random() * 4000,
+        socketTimeout: 8000,
+        greetingTimeout: 8000,
+        connectionTimeout: 10000,
       });
 
       return await new Promise((resolve) => {
@@ -128,58 +115,52 @@ class EmailChecker {
           }
         };
 
-        // Overall timeout
         const timeout = setTimeout(() => {
           cleanup();
           resolve(false);
-        }, 15000);
+        }, 12000);
 
         connection.connect(() => {
-          try {
-            // Use RCPT TO command instead of sending full message
-            connection._socket.write(`HELO ${randomHostname}\r\n`);
-            connection._socket.write(`MAIL FROM:<noreply@${domain}>\r\n`);
-            connection._socket.write(`RCPT TO:<${email}>\r\n`);
+          // Use a more realistic sender email
+          const senderEmail = `verify@${domain}`;
 
-            let response = "";
-            let commandsSent = 0;
+          connection.send(
+            { from: senderEmail, to: [email] },
+            "Subject: Test\n\nTest message",
+            (err: any) => {
+              clearTimeout(timeout);
+              cleanup();
 
-            connection._socket.on("data", (data: Buffer) => {
-              response += data.toString();
-              const lines = response.split("\r\n");
+              if (err) {
+                const errorMsg = err.message?.toLowerCase() || "";
 
-              for (const line of lines) {
-                if (line.startsWith("250") && commandsSent === 2) {
-                  // 250 response to RCPT TO means email exists
-                  clearTimeout(timeout);
-                  cleanup();
-                  resolve(true);
-                  return;
-                } else if (
-                  line.startsWith("550") ||
-                  line.startsWith("551") ||
-                  line.startsWith("553") ||
-                  line.startsWith("554")
+                // These error codes typically mean the email doesn't exist
+                if (
+                  errorMsg.includes("550") || // Mailbox unavailable
+                  errorMsg.includes("551") || // User not local
+                  errorMsg.includes("553") || // Mailbox name not allowed
+                  errorMsg.includes("554") || // Transaction failed
+                  errorMsg.includes("recipient unknown") ||
+                  errorMsg.includes("user unknown") ||
+                  errorMsg.includes("does not exist") ||
+                  errorMsg.includes("invalid recipient")
                 ) {
-                  // These codes typically mean email doesn't exist
-                  clearTimeout(timeout);
-                  cleanup();
                   resolve(false);
-                  return;
-                } else if (line.startsWith("250")) {
-                  commandsSent++;
+                } else {
+                  // Other errors might be temporary or server-related
+                  // Consider them as "might exist" for safety
+                  resolve(false);
                 }
+              } else {
+                // No error means email was accepted
+                resolve(true);
               }
-            });
-          } catch (err) {
-            clearTimeout(timeout);
-            cleanup();
-            resolve(false);
-          }
+            }
+          );
         });
 
         connection.on("error", (err: any) => {
-          console.log(`SMTP error for ${email}:`, err.message);
+          console.log(`SMTP connection error for ${email}:`, err.message);
           clearTimeout(timeout);
           cleanup();
           resolve(false);
@@ -250,19 +231,29 @@ async function validateEmailMultiMethod(
     return { valid: false, method: "format", confidence: 100 };
   }
 
-  // Method 2: DNS/MX validation (fast and less intrusive)
+  // Method 2: DNS/MX validation (only checks if domain accepts mail)
   try {
     const dnsValid = await checker.checkWithRateLimit(email, "dns");
     if (!dnsValid) {
       return { valid: false, method: "dns", confidence: 90 };
     }
-
-    // For most cases, DNS validation is sufficient
-    // Only use SMTP for critical validations or when specifically requested
-    return { valid: true, method: "dns", confidence: 85 };
   } catch (error) {
     console.log(`DNS validation failed for ${email}:`, error);
     return { valid: false, method: "dns-error", confidence: 80 };
+  }
+
+  // Method 3: SMTP validation (actually checks if email exists)
+  try {
+    const smtpValid = await checker.checkWithRateLimit(email, "smtp");
+    return {
+      valid: smtpValid,
+      method: "smtp",
+      confidence: smtpValid ? 95 : 75,
+    };
+  } catch (error) {
+    console.log(`SMTP validation failed for ${email}:`, error);
+    // If SMTP fails but DNS passed, we can't be sure
+    return { valid: false, method: "smtp-error", confidence: 60 };
   }
 }
 
