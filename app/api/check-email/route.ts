@@ -1,23 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import dns from "dns/promises";
+import net from "net";
 
-// @ts-expect-error: No type definitions for smtp-connection
-import SMTPConnection from "smtp-connection";
-
-// Clean and normalize names
+// Normalize names
 function normalize(str: string): string {
   return str.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-// Generate guess patterns from name and domain
+// Generate email guess patterns
 function generateGuesses(name: string, domain: string): string[] {
   const parts = normalize(name).split(" ");
-
   if (parts.length < 2) return [];
 
   const firstParts = parts.slice(0, Math.ceil(parts.length / 2));
   const lastParts = parts.slice(Math.ceil(parts.length / 2));
-
   const guesses = new Set<string>();
 
   for (const first of firstParts) {
@@ -37,46 +33,49 @@ function generateGuesses(name: string, domain: string): string[] {
   return Array.from(guesses);
 }
 
-// Check if email is valid via SMTP
+// Raw SMTP check with net.Socket
 async function checkEmailSMTP(email: string): Promise<boolean> {
-  try {
-    const domain = email.split("@")[1];
-    const mxRecords = await dns.resolveMx(domain);
-    if (!mxRecords.length) return false;
+  const domain = email.split("@")[1];
+  const mxRecords = await dns.resolveMx(domain);
+  if (!mxRecords.length) return false;
 
-    mxRecords.sort((a, b) => a.priority - b.priority);
-    const mxHost = mxRecords[0].exchange;
+  mxRecords.sort((a, b) => a.priority - b.priority);
+  const mxHost = mxRecords[0].exchange;
 
-    const connection = new SMTPConnection({
-      host: mxHost,
-      port: 25,
-      secure: false,
-      name: "suonora.com",
-      tls: { rejectUnauthorized: false },
-      socketTimeout: 5000,
-      greetingTimeout: 5000,
-    });
+  return await new Promise((resolve) => {
+    const socket = net.createConnection(25, mxHost, () => {
+      let step = 0;
+      const commands = [
+        `EHLO ${domain}\r\n`,
+        `MAIL FROM:<test@${domain}>\r\n`,
+        `RCPT TO:<${email}>\r\n`,
+        `QUIT\r\n`,
+      ];
 
-    console.log(domain);
+      socket.setEncoding("utf-8");
 
-    return await new Promise((resolve) => {
-      connection.connect(() => {
-        connection.send(
-          { from: `test@suonora.com`, to: [email] },
-          "Test message\n",
-          (err: any) => {
-            connection.quit();
-            if (err?.message.includes("550")) return resolve(false);
-            resolve(!err);
-          }
-        );
+      socket.on("data", (data) => {
+        if (data.toString().startsWith("550")) {
+          socket.end();
+          return resolve(false);
+        }
+
+        if (step < commands.length) {
+          socket.write(commands[step]);
+          step++;
+        } else {
+          socket.end();
+          return resolve(true);
+        }
       });
 
-      connection.on("error", () => resolve(false));
+      socket.on("error", () => resolve(false));
+      socket.setTimeout(5000, () => {
+        socket.end();
+        return resolve(false);
+      });
     });
-  } catch {
-    return false;
-  }
+  });
 }
 
 // POST handler

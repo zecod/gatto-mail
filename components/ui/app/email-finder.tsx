@@ -97,7 +97,7 @@ const HomeEmailFinder: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch("/api/v1/check-email", {
+      const response = await fetch("/api/check-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
