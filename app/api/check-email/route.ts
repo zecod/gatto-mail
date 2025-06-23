@@ -38,7 +38,7 @@ function generateGuesses(name: string, domain: string): string[] {
 }
 
 // Check if email is valid via SMTP
-async function checkEmailSMTP(email: string): Promise<boolean> {
+async function checkEmailSMTP(email: string, domain: string): Promise<boolean> {
   try {
     const domain = email.split("@")[1];
     const mxRecords = await dns.resolveMx(domain);
@@ -59,7 +59,7 @@ async function checkEmailSMTP(email: string): Promise<boolean> {
     return await new Promise((resolve) => {
       connection.connect(() => {
         connection.send(
-          { from: "noreply@suonora.com", to: [email] },
+          { from: `noreply@${domain}`, to: [email] },
           "Test message\n",
           (err: any) => {
             connection.quit();
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
     const guesses = generateGuesses(name, domain);
 
     for (const guess of guesses) {
-      const isValid = await checkEmailSMTP(guess);
+      const isValid = await checkEmailSMTP(guess, domain);
       if (isValid) {
         return NextResponse.json({
           success: true,
