@@ -51,6 +51,7 @@ async function checkEmailSMTP(email: string): Promise<boolean> {
       host: mxHost,
       port: 25,
       secure: false,
+      name: "suonora.com",
       tls: { rejectUnauthorized: false },
       socketTimeout: 5000,
       greetingTimeout: 5000,
