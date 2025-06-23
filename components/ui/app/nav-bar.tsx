@@ -3,7 +3,7 @@ import React from "react";
 
 const HomeNavbar = () => {
   return (
-    <div className="flex items-center justify-between gap-10 py-4">
+    <div className="flex items-center justify-between gap-10 p-4">
       <div className="flex items-center gap-2">
         <img
           src={"/logo-white.png"}
