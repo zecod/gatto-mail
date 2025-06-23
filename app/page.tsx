@@ -4,10 +4,9 @@ import HomeNavbar from "@/components/ui/app/nav-bar";
 
 export default function Home() {
   return (
-    <div className="max-w-[1000px] m-auto">
+    <div className="max-w-[1200px] m-auto">
       <HomeNavbar />
       <HomeHeroSection />
-
       <HomeEmailFinder />
     </div>
   );
