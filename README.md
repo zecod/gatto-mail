@@ -29,7 +29,9 @@
    - Simulates sending an email by connecting to the mail server via SMTP (no real email is sent).
 
 4. **Check Catch-All:**
-   - Checks if the mail server accepts any email (catch-all). Only if not, can the address be confirmed as valid.
+   - To check if an address is valid, we ask the mail server if it knows this address. Some mail servers do not reply or do not provide verification, so we can't always verify if an email is valid or not.
+
+**Notice:** Some mail servers do not reply or do not provide verification, so we can't always verify if an email is valid or not.
 
 ---
 

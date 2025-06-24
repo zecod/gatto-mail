@@ -231,6 +231,15 @@ const HomeContent = () => {
               checks are marked as verified.
             </div>
           </div>
+          <div>
+            <div className="font-medium mb-1">
+              Why can't some emails be verified?
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Some mail servers do not reply or do not provide verification, so
+              we can't always verify if an email is valid or not.
+            </div>
+          </div>
         </div>
       </section>
     </section>

@@ -91,9 +91,8 @@ const HomeEmailValidate: React.FC = () => {
 
       if (data.success && data.email) {
         setResult({
-          fullName: "",
           email: data.email,
-          domain: "",
+          deliverable: true,
         });
       } else {
         setError(data.message || "Failed to verify email");
@@ -152,12 +151,9 @@ const HomeEmailValidate: React.FC = () => {
         </div>
       )}
 
-      {result && (
+      {result?.deliverable && (
         <div className="border rounded-lg p-6">
-          <EmailVerificationCard
-            email={result.email || ""}
-            isVerified={true}
-          />
+          <EmailVerificationCard email={result.email || ""} isVerified={true} />
         </div>
       )}
     </div>
