@@ -85,18 +85,14 @@ const HomeEmailValidate: React.FC = () => {
 
       const data: ApiResponse = await response.json();
 
-      if (!response.ok) {
+      if (!data.success) {
         throw new Error(data.message || "Something went wrong!");
       }
 
-      if (data.success && data.email) {
-        setResult({
-          email: data.email,
-          deliverable: true,
-        });
-      } else {
-        setError(data.message || "Failed to verify email");
-      }
+      setResult({
+        email: email.trim().toLowerCase(),
+        deliverable: true,
+      });
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An unexpected error occurred";
