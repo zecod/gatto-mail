@@ -1,8 +1,8 @@
 # Gatto Mail
 
 <p align="center">
-  <img src="/logo-black.png" alt="Gatto Mail Logo (Light Mode)" width="120" style="background:#fff;" />
-  <img src="/logo-white.png" alt="Gatto Mail Logo (Dark Mode)" width="120" style="background:#222;" />
+  <img src="https://gatto.suonora.com/logo-black.png" alt="Gatto Mail Logo (Light Mode)" width="120" style="background:#fff;" />
+  <img src="https://gatto.suonora.com/logo-white.png" alt="Gatto Mail Logo (Dark Mode)" width="120" style="background:#222;" />
 </p>
 
 ## What is Gatto Mail?
@@ -17,11 +17,17 @@
 ## How does it work?
 
 1. **Generate emails:**
+
    - From the first and last name, Gatto Mail generates the most common email permutations (e.g. `firstlast@company.com`, `first.last@company.com`, `last@company.com`, etc).
+
 2. **Check mail server:**
+
    - Determines if the domain has valid MX records (mail server entries).
+
 3. **Check connection:**
+
    - Simulates sending an email by connecting to the mail server via SMTP (no real email is sent).
+
 4. **Check Catch-All:**
    - Checks if the mail server accepts any email (catch-all). Only if not, can the address be confirmed as valid.
 
@@ -95,11 +101,17 @@ curl -X POST http://localhost:3000/api/validate-email \
 ## Important Notice ⚠️
 
 - **Port 25 Block:**
+
   - The app needs to connect to mail servers via SMTP (port 25). Some ISPs and hosting providers block port 25 by default, so the email validation may not work locally. For best results, deploy on a VPS or a provider that allows outbound connections on port 25.
+
 - **Privacy:**
+
   - No emails are stored. All checks are performed in real time and are never saved or shared.
+
 - **Rate Limiting:**
+
   - Default rate limit is 5 requests per hour per user to prevent spam and abuse.
+
 - **Legal:**
   - Do not use this project for any illegal activity. Use responsibly and ethically.
 
