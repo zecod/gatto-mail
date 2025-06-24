@@ -62,7 +62,7 @@ function generateGuesses(name: string, domain: string): string[] {
 }
 
 // Raw SMTP check with net.Socket
-export async function checkEmailSMTP(email: string): Promise<boolean> {
+async function checkEmailSMTP(email: string): Promise<boolean> {
   const domain = email.split("@")[1];
   const mxRecords = await dns.resolveMx(domain);
   if (!mxRecords.length) return false;
