@@ -3,7 +3,7 @@ import Balancer from "react-wrap-balancer";
 
 const HomeHeroSection = () => {
   return (
-    <div className="text-center mt-24 space-y-6 py-10">
+    <div className="text-center mt-20 space-y-6 py-10">
       <div>Email Finder</div>
       <h1 className="text-center text-4xl font-medium md:text-6xl">
         <Balancer className="mb-3 max-w-[1130px]">

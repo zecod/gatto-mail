@@ -5,7 +5,7 @@ import net from "net";
 // At the top of your API file
 const rateLimitMap = new Map<string, { count: number; firstRequest: number }>();
 const RATE_LIMIT = 5;
-const WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const WINDOW_MS = 60 * 60 * 1000;
 
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
@@ -62,7 +62,7 @@ function generateGuesses(name: string, domain: string): string[] {
 }
 
 // Raw SMTP check with net.Socket
-async function checkEmailSMTP(email: string): Promise<boolean> {
+export async function checkEmailSMTP(email: string): Promise<boolean> {
   const domain = email.split("@")[1];
   const mxRecords = await dns.resolveMx(domain);
   if (!mxRecords.length) return false;

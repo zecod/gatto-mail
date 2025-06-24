@@ -68,29 +68,21 @@ const EmailVerificationCard: React.FC<EmailVerificationProps> = ({
 );
 
 // Main Component
-const HomeEmailFinder: React.FC = () => {
-  const [fullName, setFullName] = useState("");
-  const [domain, setDomain] = useState("");
+const HomeEmailValidate: React.FC = () => {
+  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<EmailCheckResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const validateInputs = useCallback(() => {
-    const trimmedName = fullName.trim();
-    const trimmedDomain = domain.trim();
-
-    if (!trimmedName || !trimmedDomain) {
-      return false;
-    }
-
-    // Basic domain validation
-    const domainRegex =
-      /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?\.[a-zA-Z]{2,}$/;
-    return domainRegex.test(trimmedDomain);
-  }, [fullName, domain]);
+  // Valida l'email con una regex base
+  const validateEmail = useCallback(() => {
+    const trimmedEmail = email.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(trimmedEmail);
+  }, [email]);
 
   const handleEmailCheck = useCallback(async () => {
-    if (!validateInputs()) return;
+    if (!validateEmail()) return;
 
     setIsLoading(true);
     setResult(null);
@@ -101,25 +93,24 @@ const HomeEmailFinder: React.FC = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: fullName.trim(),
-          domain: domain.trim(),
+          email: email.trim(),
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data: ApiResponse = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Something went wrong!");
+      }
 
       if (data.success && data.email) {
         setResult({
-          fullName: fullName.trim(),
+          fullName: "", // Nessun nome ora
           email: data.email,
-          domain: domain.trim(),
+          domain: "", // Nessun dominio ora
         });
       } else {
-        setError(data.message || "Failed to find email");
+        setError(data.message || "Failed to verify email");
       }
     } catch (err) {
       const errorMessage =
@@ -129,7 +120,7 @@ const HomeEmailFinder: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [fullName, domain, validateInputs]);
+  }, [email, validateEmail]);
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !isButtonDisabled) {
@@ -137,55 +128,43 @@ const HomeEmailFinder: React.FC = () => {
     }
   };
 
-  const isButtonDisabled = isLoading || !validateInputs();
+  const isButtonDisabled = isLoading || !validateEmail();
 
   return (
-    <div className="max-w-[680px] mx-auto mt-5 p-4 space-y-6">
+    <div className="max-w-[480px] mx-auto mt-5 p-4 space-y-6">
       {/* Email Input Section */}
       <div className="flex items-center h-14 border rounded-none overflow-hidden">
         <Input
-          type="text"
-          placeholder="Yassine Amine"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
+          type="email"
+          placeholder="yassine@suonora.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           onKeyPress={handleKeyPress}
-          className="rounded-none h-full !bg-transparent border-none focus:ring-0"
-          aria-label="Full name"
-        />
-        <div className="h-full w-32 flex items-center justify-center border-x bg-transparent">
-          <span className="text-muted-foreground font-mono p-2">@</span>
-        </div>
-        <Input
-          type="text"
-          placeholder="suonora.com"
-          value={domain}
-          onChange={(e) => setDomain(e.target.value)}
-          onKeyPress={handleKeyPress}
-          className="rounded-none h-full !bg-transparent border-none focus:ring-0"
-          aria-label="Domain"
+          className="rounded-none h-full !bg-transparent border-none focus:ring-0 outline-none"
+          aria-label="Email"
         />
         <Button
           onClick={handleEmailCheck}
           disabled={isButtonDisabled}
           className="h-full px-6 rounded-none border-none w-18"
-          aria-label="Find email"
+          aria-label="Validate email"
         >
-          {isLoading ? <Loader2 className="animate-spin w-4 h-4" /> : "Find"}
+          {isLoading ? (
+            <Loader2 className="animate-spin w-4 h-4" />
+          ) : (
+            "Validate"
+          )}
         </Button>
       </div>
 
-      <p className="text-xs text-center my-4 text-accent-foreground/60">
-        For better results, use a domain instead of a company name.
-      </p>
-
-      {/* Error Message */}
+      {/* Messaggio di errore */}
       {error && (
         <div className="p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-none">
           <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
         </div>
       )}
 
-      {/* Results Section */}
+      {/* Risultato */}
       {result && (
         <div className="border rounded-lg p-6">
           <EmailVerificationCard
@@ -199,4 +178,4 @@ const HomeEmailFinder: React.FC = () => {
   );
 };
 
-export default HomeEmailFinder;
+export default HomeEmailValidate;
