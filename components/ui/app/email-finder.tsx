@@ -8,9 +8,11 @@ import { Loader2, User, BadgeCheck, X } from "lucide-react";
 
 // Types
 export interface EmailCheckResult {
-  fullName: string;
-  email: string;
-  domain: string;
+  fullName?: string;
+  email?: string;
+  domain?: string;
+  deliverable?: boolean;
+  syntax?: boolean;
 }
 export interface ApiResponse {
   success: boolean;
@@ -189,8 +191,8 @@ const HomeEmailFinder: React.FC = () => {
       {result && (
         <div className="border rounded-lg p-6">
           <EmailVerificationCard
-            name={result.fullName}
-            email={result.email}
+            name={result.fullName || ""}
+            email={result.email || ""}
             isVerified={true}
           />
         </div>

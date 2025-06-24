@@ -154,7 +154,10 @@ const HomeEmailValidate: React.FC = () => {
 
       {result && (
         <div className="border rounded-lg p-6">
-          <EmailVerificationCard email={result.email} isVerified={true} />
+          <EmailVerificationCard
+            email={result.email || ""}
+            isVerified={true}
+          />
         </div>
       )}
     </div>
