@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkEmailSMTP } from "@/lib/checkEmailSMTP";
+import { isRateLimited } from "@/lib/rate-limiter";
 
 // Validate basic email syntax
 function isValidEmailSyntax(email: string): boolean {
@@ -9,6 +10,14 @@ function isValidEmailSyntax(email: string): boolean {
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for") || "unknown";
+    if (isRateLimited(ip)) {
+      return NextResponse.json(
+        { success: false, message: "Rate limit exceeded. Try again later." },
+        { status: 429 }
+      );
+    }
+
     const { email } = await req.json();
 
     if (!email || typeof email !== "string") {

@@ -5,25 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "../button";
 import { Badge } from "../badge";
 import { Loader2, User, BadgeCheck, X } from "lucide-react";
-
-// Types
-interface EmailCheckResult {
-  fullName: string;
-  email: string;
-  domain: string;
-}
-
-interface ApiResponse {
-  success: boolean;
-  message: string;
-  email?: string;
-}
-
-interface EmailVerificationProps {
-  name: string;
-  email: string;
-  isVerified: boolean;
-}
+import {
+  ApiResponse,
+  EmailCheckResult,
+  EmailVerificationProps,
+} from "./email-finder";
 
 // Components
 const EmailVerificationCard: React.FC<EmailVerificationProps> = ({
@@ -89,11 +75,11 @@ const HomeEmailValidate: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch(`/api/check-email`, {
+      const response = await fetch(`/api/validate-email`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: email.trim(),
+          email: email.trim().toLowerCase(),
         }),
       });
 
@@ -105,9 +91,9 @@ const HomeEmailValidate: React.FC = () => {
 
       if (data.success && data.email) {
         setResult({
-          fullName: "", // Nessun nome ora
+          fullName: "",
           email: data.email,
-          domain: "", // Nessun dominio ora
+          domain: "",
         });
       } else {
         setError(data.message || "Failed to verify email");
@@ -132,21 +118,20 @@ const HomeEmailValidate: React.FC = () => {
 
   return (
     <div className="max-w-[480px] mx-auto mt-5 p-4 space-y-6">
-      {/* Email Input Section */}
-      <div className="flex items-center h-14 border rounded-none overflow-hidden">
+      <div className="flex items-center h-14 border rounded-xl overflow-hidden">
         <Input
           type="email"
           placeholder="yassine@suonora.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onKeyPress={handleKeyPress}
-          className="rounded-none h-full !bg-transparent border-none focus:ring-0 outline-none"
+          className="rounded-none h-full !bg-transparent border-none focus-visible:ring-0 outline-none"
           aria-label="Email"
         />
         <Button
           onClick={handleEmailCheck}
           disabled={isButtonDisabled}
-          className="h-full px-6 rounded-none border-none w-18"
+          className="h-full px-6 rounded-none border-none min-w-18"
           aria-label="Validate email"
         >
           {isLoading ? (
@@ -157,21 +142,19 @@ const HomeEmailValidate: React.FC = () => {
         </Button>
       </div>
 
-      {/* Messaggio di errore */}
+      <p className="text-xs text-center my-4 text-accent-foreground/60">
+        Check if the email is valid and can receive emails.
+      </p>
+
       {error && (
         <div className="p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-none">
           <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
         </div>
       )}
 
-      {/* Risultato */}
       {result && (
         <div className="border rounded-lg p-6">
-          <EmailVerificationCard
-            name={result.fullName}
-            email={result.email}
-            isVerified={true}
-          />
+          <EmailVerificationCard email={result.email} isVerified={true} />
         </div>
       )}
     </div>

@@ -19,7 +19,12 @@ const HomeNavbar = () => {
       <div className="flex items-center gap-2">
         <img
           src={"/logo-white.png"}
-          className="h-10 w-10"
+          className="h-10 w-10 hidden dark:flex"
+          alt="Gatto Mail logo"
+        />
+        <img
+          src={"/logo-black.png"}
+          className="h-10 w-10 dark:hidden"
           alt="Gatto Mail logo"
         />
         <div className="font-semibold">Gatto Mail</div>

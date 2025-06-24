@@ -7,26 +7,25 @@ import { Badge } from "../badge";
 import { Loader2, User, BadgeCheck, X } from "lucide-react";
 
 // Types
-interface EmailCheckResult {
+export interface EmailCheckResult {
   fullName: string;
   email: string;
   domain: string;
 }
-
-interface ApiResponse {
+export interface ApiResponse {
   success: boolean;
   message: string;
   email?: string;
 }
 
-interface EmailVerificationProps {
-  name: string;
+export interface EmailVerificationProps {
+  name?: string;
   email: string;
   isVerified: boolean;
 }
 
 // Components
-const EmailVerificationCard: React.FC<EmailVerificationProps> = ({
+export const EmailVerificationCard: React.FC<EmailVerificationProps> = ({
   name,
   email,
   isVerified,
@@ -47,7 +46,7 @@ const EmailVerificationCard: React.FC<EmailVerificationProps> = ({
       <div className="space-y-1">
         {isVerified ? (
           <>
-            <div className="text-muted-foreground/70">{name}</div>
+            {name && <div className="text-muted-foreground/70">{name}</div>}
             <div>{email}</div>
           </>
         ) : (
@@ -83,7 +82,6 @@ const HomeEmailFinder: React.FC = () => {
       return false;
     }
 
-    // Basic domain validation
     const domainRegex =
       /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?\.[a-zA-Z]{2,}$/;
     return domainRegex.test(trimmedDomain);
@@ -142,14 +140,14 @@ const HomeEmailFinder: React.FC = () => {
   return (
     <div className="max-w-[680px] mx-auto mt-5 p-4 space-y-6">
       {/* Email Input Section */}
-      <div className="flex items-center h-14 border rounded-none overflow-hidden">
+      <div className="flex items-center h-14 border rounded-xl overflow-hidden">
         <Input
           type="text"
           placeholder="Yassine Amine"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           onKeyPress={handleKeyPress}
-          className="rounded-none h-full !bg-transparent border-none focus:ring-0"
+          className="rounded-none h-full !bg-transparent border-none focus-visible:ring-0"
           aria-label="Full name"
         />
         <div className="h-full w-32 flex items-center justify-center border-x bg-transparent">
@@ -161,16 +159,20 @@ const HomeEmailFinder: React.FC = () => {
           value={domain}
           onChange={(e) => setDomain(e.target.value)}
           onKeyPress={handleKeyPress}
-          className="rounded-none h-full !bg-transparent border-none focus:ring-0"
+          className="rounded-none h-full !bg-transparent border-none focus-visible:ring-0 "
           aria-label="Domain"
         />
         <Button
           onClick={handleEmailCheck}
           disabled={isButtonDisabled}
-          className="h-full px-6 rounded-none border-none w-18"
+          className="h-full px-6 rounded-none border-none min-w-18"
           aria-label="Find email"
         >
-          {isLoading ? <Loader2 className="animate-spin w-4 h-4" /> : "Find"}
+          {isLoading ? (
+            <Loader2 className="animate-spin w-4 h-4" />
+          ) : (
+            "Find Email"
+          )}
         </Button>
       </div>
 
@@ -178,14 +180,12 @@ const HomeEmailFinder: React.FC = () => {
         For better results, use a domain instead of a company name.
       </p>
 
-      {/* Error Message */}
       {error && (
         <div className="p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-none">
           <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
         </div>
       )}
 
-      {/* Results Section */}
       {result && (
         <div className="border rounded-lg p-6">
           <EmailVerificationCard
