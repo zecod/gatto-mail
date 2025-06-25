@@ -92,9 +92,9 @@ curl -X POST http://localhost:3000/api/validate-email \
 
 ```json
 {
-  "success": true,
-  "email": "sam@openai.com",
-  "message": "Email is valid."
+   "success":true,
+   "syntax":true,
+   "deliverable":true
 }
 ```
 
