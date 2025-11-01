@@ -62,27 +62,11 @@ The application will be available at:
 - Frontend: [http://localhost:3000](http://localhost:3000)
 - Backend API: [http://localhost:3001](http://localhost:3001)
 
-### Option 2: Manual Setup
+### Option 2: Manual Development Setup
 
-#### Frontend
+For development, you need to run both the backend and frontend.
 
-```bash
-# Navigate to frontend
-cd frontend
-
-# Install dependencies
-npm install  # or pnpm install
-
-# Set up environment
-cp .env.example .env.local
-
-# Start development server
-npm run dev  # or pnpm dev
-```
-
-Frontend will run at [http://localhost:3000](http://localhost:3000)
-
-#### Backend
+#### Step 1: Start the Backend
 
 ```bash
 # Navigate to backend
@@ -94,12 +78,32 @@ npm install
 # Set up environment
 cp .env.example .env
 
-# Start server
-npm run dev  # Development mode
-npm start    # Production mode
+# Start development server
+npm run dev
 ```
 
 Backend API will run at [http://localhost:3001](http://localhost:3001)
+
+#### Step 2: Start the Frontend (in a new terminal)
+
+```bash
+# Navigate to frontend
+cd frontend
+
+# Install dependencies
+npm install  # or pnpm install
+
+# Set up environment
+cp .env.example .env.local
+# Make sure NEXT_PUBLIC_API_URL points to http://localhost:3001/api/v1
+
+# Start development server
+npm run dev
+```
+
+Frontend will run at [http://localhost:3000](http://localhost:3000)
+
+**Note:** Both services must be running for the application to work properly.
 
 ---
 
