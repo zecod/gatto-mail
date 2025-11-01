@@ -1,8 +1,8 @@
 # Gatto Mail
 
 <p align="center">
-  <img src="https://gatto.suonora.com/logo-black.png" alt="Gatto Mail Logo (Light Mode)" width="120" style="background:#fff;" />
-  <img src="https://gatto.suonora.com/logo-white.png" alt="Gatto Mail Logo (Dark Mode)" width="120" style="background:#222;" />
+  <img src="https://tbrfpeqfgwdlktwwhnwv.supabase.co/storage/v1/object/public/assets/gatto-mail/logo-black.png" alt="Gatto Mail Logo (Light Mode)" width="120" style="background:#fff;" />
+  <img src="https://tbrfpeqfgwdlktwwhnwv.supabase.co/storage/v1/object/public/assets/gatto-mail/logo-white.png" alt="Gatto Mail Logo (Dark Mode)" width="120" style="background:#222;" />
 </p>
 
 ## What is Gatto Mail?
