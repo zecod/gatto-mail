@@ -25,15 +25,60 @@ function generateGuesses(name, domain) {
 
   for (const first of firstParts) {
     for (const last of lastParts) {
+      // Basic patterns
       guesses.add(`${first}@${domain}`);
       guesses.add(`${last}@${domain}`);
+
+      // Dot separator patterns
       guesses.add(`${first}.${last}@${domain}`);
       guesses.add(`${last}.${first}@${domain}`);
+
+      // No separator patterns
       guesses.add(`${first}${last}@${domain}`);
       guesses.add(`${last}${first}@${domain}`);
+
+      // Underscore separator patterns
+      guesses.add(`${first}_${last}@${domain}`);
+      guesses.add(`${last}_${first}@${domain}`);
+
+      // Hyphen separator patterns
+      guesses.add(`${first}-${last}@${domain}`);
+      guesses.add(`${last}-${first}@${domain}`);
+
+      // First initial + last name
       guesses.add(`${first.charAt(0)}${last}@${domain}`);
       guesses.add(`${first.charAt(0)}.${last}@${domain}`);
+      guesses.add(`${first.charAt(0)}_${last}@${domain}`);
+      guesses.add(`${first.charAt(0)}-${last}@${domain}`);
+
+      // Last initial + first name
+      guesses.add(`${last.charAt(0)}${first}@${domain}`);
+      guesses.add(`${last.charAt(0)}.${first}@${domain}`);
+      guesses.add(`${last.charAt(0)}_${first}@${domain}`);
+
+      // First name + last initial
+      guesses.add(`${first}${last.charAt(0)}@${domain}`);
+      guesses.add(`${first}.${last.charAt(0)}@${domain}`);
+      guesses.add(`${first}_${last.charAt(0)}@${domain}`);
+
+      // Last name + first initial
+      guesses.add(`${last}${first.charAt(0)}@${domain}`);
+      guesses.add(`${last}.${first.charAt(0)}@${domain}`);
+      guesses.add(`${last}_${first.charAt(0)}@${domain}`);
+
+      // Both initials
       guesses.add(`${first.charAt(0)}${last.charAt(0)}@${domain}`);
+      guesses.add(`${first.charAt(0)}.${last.charAt(0)}@${domain}`);
+      guesses.add(`${last.charAt(0)}${first.charAt(0)}@${domain}`);
+
+      // Common numbered variations (1, 01, 2)
+      guesses.add(`${first}.${last}1@${domain}`);
+      guesses.add(`${first}.${last}01@${domain}`);
+      guesses.add(`${first}.${last}2@${domain}`);
+      guesses.add(`${first}${last}1@${domain}`);
+      guesses.add(`${first.charAt(0)}${last}1@${domain}`);
+      guesses.add(`${first}1@${domain}`);
+      guesses.add(`${last}1@${domain}`);
     }
   }
 
