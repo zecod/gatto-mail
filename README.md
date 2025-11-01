@@ -35,37 +35,81 @@
 
 ---
 
+## Architecture
+
+Gatto Mail uses a modern stack with separated frontend and backend:
+
+- **Frontend**: Next.js 15 with TypeScript and Tailwind CSS
+- **Backend**: Express.js with ESM modules (standalone API)
+- **Deployment**: Docker & Docker Compose ready
+
 ## Getting Started
 
-### 1. Clone the repository
+### Option 1: Docker (Recommended)
+
+The easiest way to run the entire application:
 
 ```bash
+# Clone the repository
 git clone https://github.com/zecod/gatto-mail.git
 cd gatto-mail
+
+# Start with Docker Compose
+docker-compose up -d
 ```
 
-### 2. Install dependencies
+The application will be available at:
+- Frontend: [http://localhost:3000](http://localhost:3000)
+- Backend API: [http://localhost:3001](http://localhost:3001)
+
+### Option 2: Manual Setup
+
+#### Frontend
 
 ```bash
-npm install # or pnpm install or yarn install
+# Install dependencies
+npm install  # or pnpm install
+
+# Set up environment
+cp .env.example .env.local
+
+# Start development server
+npm run dev  # or pnpm dev
 ```
 
-### 3. Start the development server
+Frontend will run at [http://localhost:3000](http://localhost:3000)
+
+#### Backend
 
 ```bash
-npm dev # or pnpm run dev or yarn dev
+# Navigate to backend
+cd backend
+
+# Install dependencies
+npm install
+
+# Set up environment
+cp .env.example .env
+
+# Start server
+npm run dev  # Development mode
+npm start    # Production mode
 ```
 
-The app will be running at [http://localhost:3000](http://localhost:3000)
+Backend API will run at [http://localhost:3001](http://localhost:3001)
 
 ---
 
 ## API Usage
 
+The backend API runs independently on port 3001. All API endpoints are prefixed with `/api/v1`.
+
 ### Check Email
 
+Find and verify email addresses based on name and domain:
+
 ```bash
-curl -X POST http://localhost:3000/api/check-email \
+curl -X POST http://localhost:3001/api/v1/check-email \
   -H "Content-Type: application/json" \
   -d '{"name": "Sam Altman", "domain": "openai.com"}'
 ```
@@ -76,14 +120,16 @@ curl -X POST http://localhost:3000/api/check-email \
 {
   "success": true,
   "email": "sam@openai.com",
-  "message": "Email found and verified."
+  "message": "ok"
 }
 ```
 
 ### Validate Email
 
+Validate email syntax and check SMTP deliverability:
+
 ```bash
-curl -X POST http://localhost:3000/api/validate-email \
+curl -X POST http://localhost:3001/api/v1/validate-email \
   -H "Content-Type: application/json" \
   -d '{"email": "sam@openai.com"}'
 ```
@@ -92,10 +138,94 @@ curl -X POST http://localhost:3000/api/validate-email \
 
 ```json
 {
-   "success":true,
-   "syntax":true,
-   "deliverable":true
+  "success": true,
+  "syntax": true,
+  "deliverable": true
 }
+```
+
+### Health Check
+
+```bash
+curl http://localhost:3001/health
+```
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "message": "Server is running",
+  "timestamp": "2025-11-01T12:00:00.000Z"
+}
+```
+
+---
+
+## Docker Deployment
+
+### Building and Running
+
+```bash
+# Build and start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop all services
+docker-compose down
+```
+
+### Individual Services
+
+Build and run services separately:
+
+```bash
+# Backend only
+docker build -t gatto-mail-backend ./backend
+docker run -p 3001:3001 gatto-mail-backend
+
+# Frontend only
+docker build -t gatto-mail-frontend .
+docker run -p 3000:3000 -e NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1 gatto-mail-frontend
+```
+
+### Environment Variables
+
+#### Frontend (.env.local)
+```
+NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
+```
+
+#### Backend (backend/.env)
+```
+PORT=3001
+NODE_ENV=production
+API_PREFIX=/api/v1
+```
+
+---
+
+## Project Structure
+
+```
+gatto-mail/
+├── app/                    # Next.js app directory
+├── components/             # React components
+├── lib/                    # Utility functions
+├── backend/                # Express.js backend
+│   ├── src/
+│   │   ├── config/         # Configuration
+│   │   ├── controllers/    # Route handlers
+│   │   ├── routes/         # API routes
+│   │   ├── utils/          # Helper functions
+│   │   └── server.js       # Express server
+│   ├── Dockerfile
+│   └── package.json
+├── docker-compose.yml      # Docker orchestration
+├── Dockerfile              # Frontend Docker config
+└── README.md
 ```
 
 ---
