@@ -67,6 +67,9 @@ The application will be available at:
 #### Frontend
 
 ```bash
+# Navigate to frontend
+cd frontend
+
 # Install dependencies
 npm install  # or pnpm install
 
@@ -187,13 +190,13 @@ docker build -t gatto-mail-backend ./backend
 docker run -p 3001:3001 gatto-mail-backend
 
 # Frontend only
-docker build -t gatto-mail-frontend .
+docker build -t gatto-mail-frontend ./frontend
 docker run -p 3000:3000 -e NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1 gatto-mail-frontend
 ```
 
 ### Environment Variables
 
-#### Frontend (.env.local)
+#### Frontend (frontend/.env.local)
 ```
 NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
 ```
@@ -211,9 +214,15 @@ API_PREFIX=/api/v1
 
 ```
 gatto-mail/
-├── app/                    # Next.js app directory
-├── components/             # React components
-├── lib/                    # Utility functions
+├── frontend/               # Next.js frontend
+│   ├── app/                # Next.js app directory
+│   ├── components/         # React components
+│   ├── lib/                # Utility functions
+│   ├── public/             # Static assets
+│   ├── Dockerfile          # Frontend Docker config
+│   ├── package.json
+│   ├── next.config.ts
+│   └── .env.example
 ├── backend/                # Express.js backend
 │   ├── src/
 │   │   ├── config/         # Configuration
@@ -221,10 +230,11 @@ gatto-mail/
 │   │   ├── routes/         # API routes
 │   │   ├── utils/          # Helper functions
 │   │   └── server.js       # Express server
-│   ├── Dockerfile
-│   └── package.json
+│   ├── Dockerfile          # Backend Docker config
+│   ├── package.json
+│   └── .env.example
 ├── docker-compose.yml      # Docker orchestration
-├── Dockerfile              # Frontend Docker config
+├── .gitignore
 └── README.md
 ```
 
