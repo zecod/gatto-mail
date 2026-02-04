@@ -9,7 +9,6 @@
 
 **Gatto Mail** is a free, open source email finder and validator. It helps you find and verify professional email addresses using only a name and company domain. No signup required. Built for privacy and transparency.
 
-- **Live preview:** [gatto.suonora.com](https://gatto.suonora.com)
 - **Source code:** [https://github.com/zecod/gatto-mail](https://github.com/zecod/gatto-mail)
 
 ---
